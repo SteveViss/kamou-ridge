@@ -1,0 +1,27 @@
+---
+title: "Kamouraska ridges"
+---
+
+## Préparation des données
+
+On charge le fichier de forme de la region administrative du Kamouraska.
+Les fichiers de formes proviennent du site du gouvernement du Québec: https://www.donneesquebec.ca/recherche/dataset/decoupages-administratifs
+
+```{R}
+mrc <- sf::st_read("data/Sda/version_courante/SHP/mrc_s.shp")
+kamou <- dplyr::filter(mrc, MRS_NM_MRC == 'Kamouraska')
+mapview::mapview(kamou)
+```
+On désire à présent obtenir les images LIDAR pour la MRC du kamouraska. Pour cela, on télécharge un DEM issue du site internet: https://app.geo.ca/result/en/canadian-digital-elevation-model,-1945-2011?id=7f245e4d-76c2-4caa-951a-45d1d2051333&lang=en.
+
+
+```{R}
+dem <- terra::rast("data/dem/DEM.tif")
+
+dem <- dem |> 
+    terra::project(sf::st_crs(kamou)$proj4string) |>
+    terra::crop(kamou) |>
+    terra::mask(kamou)
+
+mapview::mapview(dem)
+```
